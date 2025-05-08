@@ -9,33 +9,94 @@
 <body>
   <!-- Navbar -->
   <%- include('partials/navbar') %>
-
-
-  <main class="container mt-5" style="max-width: 400px;">
+  <main class="container mt-5" style="max-width: 600px;">
     <h2 class="text-center mb-4">Create an Account</h2>
-
+  
     <% if (typeof error !== 'undefined') { %>
       <div class="alert alert-danger text-center"><%= error %></div>
     <% } %>
-
+  
     <form action="/registerAccount" method="POST">
+      <div class="row mb-3">
+        <div class="col">
+          <label class="form-label">First Name *</label>
+          <input type="text" class="form-control" name="first_name" required>
+        </div>
+        <div class="col">
+          <label class="form-label">Surname *</label>
+          <input type="text" class="form-control" name="surname" required>
+        </div>
+      </div>
+  
+      <div class="row mb-3">
+        <div class="col">
+          <label class="form-label">E-mail *</label>
+          <input type="email" class="form-control" name="email" required>
+        </div>
+        <div class="col">
+          <label class="form-label">Date of Birth *</label>
+          <input type="date" class="form-control" name="dob" required>
+        </div>
+      </div>
+      
       <div class="mb-3">
-        <label for="register-username" class="form-label">Username</label>
-        <input type="text" class="form-control" id="register-username" name="register_username" required>
+        <label class="form-label">Username *</label>
+        <input type="text" class="form-control" name="username" required>
       </div>
 
-      <div class="mb-3">
-        <label for="register-password" class="form-label">Password</label>
-        <input type="password" class="form-control" id="register-password" name="register_password" required>
+      <div class="row mb-3">
+        <div class="col">
+          <label class="form-label">Password *</label>
+          <input type="password" class="form-control" name="password" required>
+        </div>
+        <div class="col">
+          <label class="form-label">Re-enter Password *</label>
+          <input type="password" class="form-control" name="confirm_password" required>
+        </div>
       </div>
-
+  
+      <div class="mb-3">
+        <small class="text-muted">
+          For your security please ensure your password:<br>
+          • Is between 8 and 30 characters long<br>
+          • Contains upper and lower case letters<br>
+          • Contains at least one number and one special character
+        </small>
+      </div>
+  
+      <div class="row mb-3">
+        <div class="col">
+          <label class="form-label">Country *</label>
+          <select class="form-select" name="country" required>
+            <option value="" disabled selected>Select Country</option>
+            <option value="Singapore">Singapore</option>
+            <option value="Malaysia">Malaysia</option>
+            <option value="Indonesia">Indonesia</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+  
+      <div class="mb-3">
+        <label class="form-label d-block">Do you want to hear about our offers?</label>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="marketing_consent" id="yes" value="yes">
+          <label class="form-check-label" for="yes">Yes</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="marketing_consent" id="no" value="no">
+          <label class="form-check-label" for="no">No</label>
+        </div>
+      </div>
+  
       <div class="d-grid">
         <button type="submit" class="btn btn-dark">Register</button>
       </div>
-
+  
       <p class="mt-3 text-center">Already have an account? <a href="/login">Login here</a></p>
     </form>
   </main>
+  
 </body>
 <%- include('partials/footer') %>
 </html>
