@@ -16,7 +16,7 @@ The Football Club Management System is a full-stack web application designed to 
 ## ⚙️ How to Run This Project
 
 ### 1. Clone the Repository
-git clone https://github.com/liying23025305/FYP---Football-Club-Management.git
+git clone 
 cd FYP---Football-Club-Management
 
 ### 2. Start MySQL Using XAMPP
