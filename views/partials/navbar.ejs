@@ -3,7 +3,7 @@
     <!-- Left Logo Text -->
     <a class="navbar-brand text-white ms-2" href="/">
       <img src="/images/logo.png" alt="Football Club Logo" class="logo">
-      </a>
+    </a>
     <!-- Hamburger Toggle -->
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
       aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,7 +31,24 @@
       </ul>
 
       <!-- Login Button -->
-      <a href="/login" class="btn btn-outline-light ms-3">Login</a>
+      <% if (user) { %>
+        <div class="dropdown ms-3 position-relative">
+          <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown"
+            aria-expanded="false">
+            <%= user.username %>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="/profile">Profile</a></li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+            <li><a class="dropdown-item" href="/logout">Logout</a></li>
+          </ul>
+        </div>
+        <% } else { %>
+          <a href="/login" class="btn btn-outline-light ms-3">Login</a>
+          <% } %>
+
     </div>
   </div>
 </nav>

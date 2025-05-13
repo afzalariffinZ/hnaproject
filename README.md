@@ -38,3 +38,8 @@ database: 'your_database_name'
 node app.js
 Then open your browser and go to:
 http://localhost:3000
+
+
+
+### Install also:
+npm install mysql2 bcrypt

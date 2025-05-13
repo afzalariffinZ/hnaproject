@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const session = require('express-session');
 const app = express();
+const db = require('./models/db'); // Assuming db.js is in the models folder
 
 // Dummy in-memory user storage
 let users = [
@@ -15,6 +16,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+
 // Session middleware
 app.use(
   session({
@@ -25,8 +27,14 @@ app.use(
   })
 );
 
+app.use((req, res, next) => {
+  res.locals.user = req.session.user || null;
+  next();
+});
+
 // Temporary in-memory cart
 let cart = [];
+
 
 // Home Route
 app.get('/', (req, res) => {
@@ -43,16 +51,28 @@ app.get('/login', (req, res) => {
 });
 
 // Login Submission with role check
-app.post('/loginAccount', (req, res) => {
+app.post('/loginAccount', async (req, res) => {
   const { username, password } = req.body;
-  const user = users.find(u => u.username === username && u.password === password);
 
-  if (user) {
-    req.session.user = user;
 
-    if (user.role === 'admin') {
-      return res.redirect('/admin/dashboard');
+  //find user in the database
+  // const sql = 'SELECT * FROM customer_account WHERE username = ? AND password = ?';
+  // const values = [username, password];
+  // const [user] = await db.query(sql, values);
+  // For demonstration, using in-memory user storage
+  // In a real application, you should hash passwords and use a secure method to check them
+  // const user = users.find(u => u.username === username && u.password === password);
+  const sql = 'SELECT * FROM customer_account WHERE username = ? AND password = ?';
+  const values = [username, password];
+  const [user] = await db.query(sql, values);
+
+  if (user && user.length > 0) {  // Check if user is found
+    req.session.user = user[0];  // Ensure you're getting the first user in case of multiple results
+    console.log('User logged in:', user[0].role);
+    if (user[0].role === 'admin') {
+      return res.redirect('/admin');
     } else {
+      console.log('User logged in:', user[0].role);
       return res.redirect('/');
     }
   } else {
@@ -60,14 +80,6 @@ app.post('/loginAccount', (req, res) => {
   }
 });
 
-// Admin Dashboard (Protected)
-app.get('/admin/dashboard', (req, res) => {
-  if (!req.session.user || req.session.user.role !== 'admin') {
-    return res.status(403).send('Access denied.');
-  }
-
-  res.render('admin_dashboard', { user: req.session.user });
-});
 
 // Register Route
 app.get('/register', (req, res) => {
@@ -75,10 +87,72 @@ app.get('/register', (req, res) => {
 });
 
 // Register Submission (default role = member)
-app.post('/registerAccount', (req, res) => {
-  const { username, password } = req.body;
-  users.push({ username, password, role: 'member' }); // default new users are members
-  res.redirect('/login');
+app.post('/registerAccount', async (req, res) => {
+
+  //insert the logic to place the user in the database
+  const {
+    username,
+    password, // Plain text password from form
+    first_name,
+    surname,
+    email,
+    dob,       // Ensure this is in 'YYYY-MM-DD' format for MySQL DATE type
+    country,
+    marketing_consent // This will be 'on' if a checkbox is checked, or undefined
+  } = req.body;
+
+  if (!username || !password || !first_name || !surname || !email || !dob || !country) {
+    return res.status(400).send('All required fields (username, password, first_name, surname, email, dob, country) must be provided.');
+  }
+
+  try {
+
+    const marketingConsentValue = marketing_consent === 'yes';
+
+    const sql = `
+            INSERT INTO customer_account
+              (username, password, first_name, surname, email, dob, country, marketing_consent)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          `;
+    const role = 'member'; // Default role for new users
+
+    const values = [
+      username,
+      password,
+      first_name,
+      surname,
+      email,
+      dob,
+      country,
+      marketingConsentValue, // Use the converted boolean value here
+      role
+    ];
+
+    const [result] = await db.query(sql, values);
+
+    console.log('User registered successfully. Insert ID:', result.insertId);
+
+    req.session.user = {
+      id: username,
+      email: email,
+      role: role
+    };
+
+    res.redirect('/');
+
+  } catch (error) {
+    console.error('Error registering account:', error);
+    // ... (your existing error handling)
+    if (error.code === 'ER_DUP_ENTRY') {
+      if (error.message.includes('email_UNIQUE')) {
+        return res.status(409).send('Registration failed: Email already exists.');
+      } else if (error.message.includes('username_UNIQUE')) {
+        return res.status(409).send('Registration failed: Username already exists.');
+      }
+      return res.status(409).send('Registration failed: Duplicate entry.');
+    }
+    res.status(500).send('Error registering account. Please try again later.');
+  }
 });
 
 // Logout Route
@@ -86,6 +160,15 @@ app.get('/logout', (req, res) => {
   req.session.destroy(() => {
     res.redirect('/login');
   });
+});
+
+// Admin Dashboard (Protected)
+app.get('/admin/dashboard', (req, res) => {
+  if (!req.session.user || req.session.user.role !== 'admin') {
+    return res.redirect('/'); // or res.redirect('/login');
+  }
+
+  res.render('admin_dashboard', { user: req.session.user });
 });
 
 // Store Route
@@ -202,12 +285,25 @@ app.get('/membership', (req, res) => {
 
 //Route to admin page
 app.get('/admin', (req, res) => {
+
+  if (!req.session.user || req.session.user.role !== 'admin') {
+    return res.redirect('/'); // or res.redirect('/login');
+  }
   // Dummy admin data for now
+  // const adminData = {
+  //   username: 'admin_john',
+  //   email: 'admin@example.com',
+  //   phone: '91234567',
+  //   joinDate: '2023-06-15'
+  // };
+
+  const data = req.session.user || { name: 'Guest', email: '', address: '' };
+
   const adminData = {
-    username: 'admin_john',
-    email: 'admin@example.com',
+    username: data.username,
+    email: data.email,
     phone: '91234567',
-    joinDate: '2023-06-15'
+    joinDate: data.dob
   };
 
   res.render('admin', { admin: adminData });

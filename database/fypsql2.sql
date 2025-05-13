@@ -26,9 +26,12 @@ CREATE TABLE IF NOT EXISTS `mydb`.`customer_account` (
   `email` VARCHAR(255) NOT NULL,
   `dob` DATE NOT NULL,
   `country` VARCHAR(100) NOT NULL,
-  `marketing_consent` VARCHAR(45) NULL,
+  `marketing_consent` BOOLEAN NULL,
+  `role` ENUM('admin', 'member') NOT NULL DEFAULT 'member',
   PRIMARY KEY (`account_id`),
-  UNIQUE INDEX `email_UNIQUE` (`email` ASC) );
+  UNIQUE INDEX `email_UNIQUE` (`email` ASC)
+);
+
 
 
 -- -----------------------------------------------------

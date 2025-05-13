@@ -14,6 +14,11 @@ html, body {
   }
   
 
+.dropdown-menu {
+  z-index: 1050 !important;
+  position: absolute !important;
+}
+
 /* Adjust the logo size */
 .navbar .logo {
     height: 50px; /* Set a fixed height */
